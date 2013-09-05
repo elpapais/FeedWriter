@@ -8,7 +8,7 @@ include('../RSS2.php');
 
 date_default_timezone_set('UTC');
 
-use \FeedWriter\RSS2;
+use \FeedWriter\View\RSS2;
 
 /* 
  * Copyright (C) 2008 Anis uddin Ahmad <anisniit@gmail.com>

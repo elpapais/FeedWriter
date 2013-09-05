@@ -2,6 +2,7 @@
 namespace FeedWriter;
 
 use \DateTime;
+use \FeedWriter\View\SyndicationBase;
 
 /*
  * Copyright (C) 2008 Anis uddin Ahmad <anisniit@gmail.com>
@@ -26,7 +27,7 @@ use \DateTime;
 /**
  * Universal Feed Writer
  *
- * Item class - Used as feed element in Feed class
+ * Item class - Used as feed element in SyndicationBase class
  *
  * @package         UniversalFeedWriter
  * @author          Anis uddin Ahmad <anisniit@gmail.com>
@@ -54,7 +55,7 @@ class Item
 	*
 	* @param    constant     (RSS1/RSS2/ATOM) RSS2 is default.
 	*/
-	function __construct($version = Feed::RSS2)
+	function __construct($version = SyndicationBase::RSS2)
 	{
 		$this->version = $version;
 	}
@@ -136,7 +137,7 @@ class Item
 	* Return the type of this feed item
 	*
 	* @access   public
-	* @return   string  The feed type, as defined in Feed.php
+	* @return   string  The feed type, as defined in SyndicationBase.php
 	*/
 	public function getVersion()
 	{
@@ -154,7 +155,7 @@ class Item
 	*/
 	public function setDescription($description)
 	{
-		$tag = ($this->version == Feed::ATOM) ? 'summary' : 'description';
+		$tag = ($this->version == SyndicationBase::ATOM) ? 'summary' : 'description';
 		return $this->addElement($tag, $description);
 	}
 
@@ -168,8 +169,8 @@ class Item
 	 */
 	public function setContent($content)
 	{
-		if ($this->version != Feed::ATOM)
-			die('The content element is supported in ATOM feeds only.');
+		if ($this->version != SyndicationBase::ATOM)
+			throw new Exception('The content element is supported in ATOM feeds only.');
 
 		return $this->addElement('content', $content, array('type' => 'html'));
 	}
@@ -209,18 +210,18 @@ class Item
 				$date = strtotime($date);
 
 				if ($date === FALSE)
-					die('The given date string was not parseable.');
+					throw new Exception('The given date string was not parseable.');
 			}
 		}
 		else if ($date < 0)
-			die('The given date is not an UNIX timestamp.');
+			throw new Exception('The given date is not an UNIX timestamp.');
 
-		if($this->version == Feed::ATOM)
+		if($this->version == SyndicationBase::ATOM)
 		{
 			$tag    = 'updated';
 			$value  = date(\DATE_ATOM, $date);
 		}
-		elseif($this->version == Feed::RSS2)
+		elseif($this->version == SyndicationBase::RSS2)
 		{
 			$tag    = 'pubDate';
 			$value  = date(\DATE_RSS, $date);
@@ -243,14 +244,14 @@ class Item
 	*/
 	public function setLink($link)
 	{
-		if($this->version == Feed::RSS2 || $this->version == Feed::RSS1)
+		if($this->version == SyndicationBase::RSS2 || $this->version == SyndicationBase::RSS1)
 		{
 			$this->addElement('link', $link);
 		}
 		else
 		{
 			$this->addElement('link','',array('href'=>$link));
-			$this->addElement('id', Feed::uuid($link,'urn:uuid:'));
+			$this->addElement('id', SyndicationBase::uuid($link,'urn:uuid:'));
 		}
 
 		return $this;
@@ -275,21 +276,21 @@ class Item
 	*/
 	public function addEnclosure($url, $length, $type, $multiple = TRUE)
 	{
-		if ($this->version == Feed::RSS1)
-			die('Media attachment is not supported in RSS1 feeds.');
+		if ($this->version == SyndicationBase::RSS1)
+			throw new Exception('Media attachment is not supported in RSS1 feeds.');
 
 		// the length parameter should be set to 0 if it can't be determined
 		// see http://www.rssboard.org/rss-profile#element-channel-item-enclosure
 		if (!is_numeric($length) || $length < 0)
-			die('The length parameter must be an integer and greater or equals to zero.');
+			throw new Exception('The length parameter must be an integer and greater or equals to zero.');
 
 		// Regex used from RFC 4287, page 41
 		if (!is_string($type) || preg_match('/.+\/.+/', $type) != 1)
-			die('type parameter must be a string and a MIME type.');
+			throw new Exception('type parameter must be a string and a MIME type.');
 
 		$attributes = array('length' => $length, 'type' => $type);
 
-		if ($this->version == Feed::RSS2)
+		if ($this->version == SyndicationBase::RSS2)
 		{
 			$attributes['url'] = $url;
 			$this->addElement('enclosure', '', $attributes, FALSE, $multiple);
@@ -334,15 +335,15 @@ class Item
 	{
 		switch($this->version)
 		{
-			case Feed::RSS1: die('The author element is not supported in RSS1 feeds.');
+			case SyndicationBase::RSS1: throw new Exception('The author element is not supported in RSS1 feeds.');
 				break;
-			case Feed::RSS2:
+			case SyndicationBase::RSS2:
 				if ($email != null)
 					$author = $email . ' (' . $author . ')';
 
 				$this->addElement('author', $author);
 				break;
-			case Feed::ATOM:
+			case SyndicationBase::ATOM:
 				$elements = array('name' => $author);
 
 				// Regex from RFC 4287 page 41
@@ -369,21 +370,21 @@ class Item
 	*/
 	public function setId($id, $permaLink = false)
 	{
-		if ($this->version == Feed::RSS2)
+		if ($this->version == SyndicationBase::RSS2)
 		{
 			if (!is_bool($permaLink))
-				die('The permaLink parameter must be boolean.');
+				throw new Exception('The permaLink parameter must be boolean.');
 
 			$permaLink = $permaLink ? 'true' : 'false';
 
 			$this->addElement('guid', $id, array('isPermaLink' => $permaLink));
 		}
-		else if ($this->version == Feed::ATOM)
+		else if ($this->version == SyndicationBase::ATOM)
 		{
-			$this->addElement('id', Feed::uuid($id,'urn:uuid:'), NULL, TRUE);
+			$this->addElement('id', SyndicationBase::uuid($id,'urn:uuid:'), NULL, TRUE);
 		}
 		else
-			die('A unique ID is not supported in RSS1 feeds.');
+			throw new Exception('A unique ID is not supported in RSS1 feeds.');
 
 		return $this;
 	}

@@ -1,20 +1,33 @@
-This package can be used to generate feeds in either RSS 1.0, RSS 2.0 or ATOM
-formats.
+FeedWriter
+==========
 
-There are three main classes that abstract the feed information and another to
-encapsulate the feed items information.
+This package can be used to generate feeds in a number of formats, including
+RSS 1.0, RSS 2.0, and Atom.
 
-Applications can create feed writer object, several feed item objects, set
-several types of properties of either feeds and feed items, and add items to
-the feed.
+Each output format is handled by a member of the `FeedWriter\View` namespace.
+These offer an interface for setting properties of feeds, creating individual
+feed items, and manipulating items directly.
 
-Once a feed is fully composed with its items, the feed writer class can generate
-the necessary XML structure to describe the feed in the RSS or ATOM formats.
-The feed is generated as part of the current feed output.
+In addition to these basic facilities, the `Feed` class provides an interface
+for mapping collections of items to a standard format for use by any of the
+desired views.  Users with collection of model objects may define a single
+mapping and use it to produce any view on demand.
+
+Executable sample code is provided for all views.
+
+output formats
+--------------
+
+* Atom
+* RSS 1.0
+* RSS 2.0
+* CSV
+* JSON
+* Google Product XML
 
 
 Requirements
-============
+------------
 
 PHP >= 5.3
 
@@ -23,14 +36,15 @@ PHP >= 5.0 in the "legacy-php-5.0" branch.
 
 
 Documentation
-=============
+-------------
 
 The documentation can be found in the "gh-pages" branch or on GitHub Pages:
 http://mibe.github.io/FeedWriter/
 
 
 Authors
-=======
+-------
+
 (in chronological order)
 
 Anis uddin Ahmad
